@@ -31,6 +31,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: true
 
       - name: Get latest Hercules tag
         run: |
