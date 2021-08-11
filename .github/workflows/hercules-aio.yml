@@ -116,3 +116,6 @@ jobs:
           tags: ${{ steps.image_tags.outputs.value }}
           platforms: ${{ env.PLATFORMS }}
           push: ${{ env.PUSH_IMAGE }}
+          build-args: |
+            HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
+            HERCULES_PACKET_VERSION=${{ env.HERCULES_PACKETVER }}
