@@ -10,7 +10,7 @@ RUN mkdir -p /var/log/hercules
 USER hercules
 WORKDIR /home/hercules
 
-COPY --from=builder /home/builduser/distrib/hercules/* /home/hercules
+COPY --from=builder /home/builder/distrib/hercules/* /home/hercules
 
 # Login server, Character server, Map server
 EXPOSE 6900 6121 5121
