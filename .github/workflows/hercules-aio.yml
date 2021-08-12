@@ -19,6 +19,7 @@ env:
   IMAGE_NAME: hercules-aio
   PUSH_IMAGE: ${{ github.ref == 'refs/heads/main' }}
   DEFAULT_PACKETVER: '20190605'
+  BUILD_RELEASE: true
 
 jobs:
 
@@ -56,8 +57,8 @@ jobs:
           fi
 
       - name: Check whether latest release needs building
+        if: ${{ env.PUSH_IMAGE }}
         run: |
-          echo "BUILD_RELEASE=true" >> $GITHUB_ENV
           # Check whether there already is a Docker image for the current tag
           SERVER_TAGS=$(curl -s https://registry.hub.docker.com/v1/repositories/${{ secrets.DOCKERHUB_USERNAME }}/hercules/tags | jq -r ".[].name") || SERVER_TAGS="none"
           for tag in ${SERVER_TAGS[@]}; do
@@ -81,29 +82,29 @@ jobs:
           # Mark classic image with packet version ${{ env.DEFAULT_PACKETVER }} as the default on "hercules" repo
           cond: ${{ matrix.HERCULES_SERVER_MODE == 'classic' && env.HERCULES_PACKETVER == env.DEFAULT_PACKETVER }}
           if_true: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules:${{ env.HERCULES_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:latest
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ env.HERCULES_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
             ghcr.io/${{ github.repository_owner }}/hercules:latest
             ghcr.io/${{ github.repository_owner }}/hercules:${{ env.HERCULES_TAG }}
             ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
             ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
           if_false: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
             ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
             ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
 
       - name: Login to DockerHub
-        if: env.PUSH_IMAGE && env.BUILD_RELEASE
+        if: env.PUSH_IMAGE
         uses: docker/login-action@v1 
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
-        if: env.PUSH_IMAGE && env.BUILD_RELEASE
+        if: env.PUSH_IMAGE
         uses: docker/login-action@v1 
         with:
           registry: ghcr.io
@@ -111,7 +112,6 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build ${{ env.IMAGE_NAME }} Docker image
-        if: env.BUILD_RELEASE
         uses: docker/build-push-action@v2
         with:
           context: hercules-build
