@@ -75,7 +75,7 @@ jobs:
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v1
         with:
-          buildkitd-flags: --oci-worker-max-parallelism=2
+          config: buildkitd.toml
 
       - uses: haya14busa/action-cond@v1
         id: image_tags
