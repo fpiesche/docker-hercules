@@ -15,5 +15,14 @@ COPY --from=builder /home/builder/distrib/hercules/* /home/hercules
 # Login server, Character server, Map server
 EXPOSE 6900 6121 5121
 
+# Environment variables for documentation
+ENV MYSQL_SERVER="localhost" \
+    MYSQL_PORT="3306" \
+    MYSQL_DATABASE="ragnarok" \
+    MYSQL_USER="ragnarok" \
+    MYSQL_PASSWORD="ragnarok" \
+    INTERSERVER_USER="wisp" \
+    INTERSERVER_PASSORD="wisp"
+
 VOLUME /home/hercules/config
 CMD [ "/home/hercules/athena-start", "start" ]
