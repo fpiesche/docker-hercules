@@ -20,6 +20,7 @@ env:
   PUSH_IMAGE: ${{ github.ref == 'refs/heads/main' }}
   DEFAULT_PACKETVER: '20190605'
   BUILD_RELEASE: true
+  QEMU_STACK_SIZE: 134217728
 
 jobs:
 
