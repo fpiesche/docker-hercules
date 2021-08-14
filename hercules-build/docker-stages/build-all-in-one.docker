@@ -1,7 +1,7 @@
 ###
 # Build all-in-one image, copying from previous build stage
 ###
-FROM alpine:3.14 AS builder-aio
+FROM alpine:3.14 AS hercules-aio
 
 RUN adduser --home /home/hercules --shell /bin/ash --gecos "hercules" --disabled-password hercules
 RUN apk add --no-cache mariadb-connector-c
