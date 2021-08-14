@@ -15,9 +15,6 @@ BUILD_TARGET=${DISTRIB_PATH}/${BUILD_IDENTIFIER}
 echo "=== Getting Hercules source code..."
 git clone https://github.com/HerculesWS/Hercules ${HERCULES_SRC}
 
-echo "=== Extracting packet version..."
-PACKETVER_FROM_SOURCE=$(cat ${HERCULES_SRC}/src/common/mmo.h | sed -n -e 's/^.*#define PACKETVER \(.*\)/\1/p')
-
 if [[ ! -z ${GIT_VERSION} ]]; then
    echo "=== Checking out revision ${GIT_VERSION}..."
    cd ${HERCULES_SRC}
@@ -43,10 +40,12 @@ if [[ ${ARCH} == "aarch64" ]] && [[ ! -z ${DISABLE_MANAGER_ARM64} ]]; then
    HERCULES_BUILD_OPTS=$HERCULES_BUILD_OPTS" --disable-manager"
 fi
 
-# Set the packet version if it's been passed in.
-if [[ ! -z "${HERCULES_PACKET_VERSION}" && ${HERCULES_PACKET_VERSION} != "latest" ]]; then
-   HERCULES_BUILD_OPTS=$HERCULES_BUILD_OPTS" --enable-packetver=${HERCULES_PACKET_VERSION}"
+# Get latest packet version from source if it hasn't been passed in.
+if [[ -z ${HERCULES_PACKET_VERSION} || ${HERCULES_PACKET_VERSION} == "latest" ]]; then
+   echo "=== Extracting latest packet version..."
+   HERCULES_PACKET_VERSION=$(cat ${HERCULES_SRC}/src/common/mmo.h | sed -n -e 's/^.*#define PACKETVER \(.*\)/\1/p')
 fi
+HERCULES_BUILD_OPTS=$HERCULES_BUILD_OPTS" --enable-packetver=${HERCULES_PACKET_VERSION}"
 
 # Disable Renewal on Classic mode builds
 if [[ ${HERCULES_SERVER_MODE} == "classic" ]]; then
@@ -64,6 +63,7 @@ echo "=== Target platform: ${ARCH}"
 echo "==========================================================="
 
 echo "=== Build options: ${HERCULES_BUILD_OPTS}..."
+
 rm -rf ${BUILD_TARGET}
 cd ${HERCULES_SRC}
 ./configure ${HERCULES_BUILD_OPTS}
@@ -71,7 +71,9 @@ if [[ $? -ne 0 ]]; then
    echo "CONFIGURE FAILED"
    exit 1
 fi
+
 make
+
 if [[ $? -ne 0 ]]; then
    echo "BUILD FAILED"
    exit 1
@@ -135,7 +137,7 @@ echo "=== Adding build version file to distribution..."
 VERSION_FILE=${BUILD_TARGET}/version_info.ini
 echo "[version_info]" > ${VERSION_FILE}
 echo "git_version="${GIT_VERSION} >> ${VERSION_FILE}
-echo "packet_version="${HERCULES_PACKET_VERSION:-${PACKETVER_FROM_SOURCE}} >> ${VERSION_FILE}
+echo "packet_version="${HERCULES_PACKET_VERSION} >> ${VERSION_FILE}
 echo "server_mode="${HERCULES_SERVER_MODE} >> ${VERSION_FILE}
 echo "build_date="${BUILD_TIMESTAMP} >> ${VERSION_FILE}
 echo "arch="${ARCH} >> ${VERSION_FILE}
