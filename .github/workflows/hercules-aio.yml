@@ -123,3 +123,4 @@ jobs:
           build-args: |
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
             HERCULES_PACKET_VERSION=${{ env.HERCULES_PACKETVER }}
+            GIT_VERSION=${{ env.HERCULES_TAG }}
