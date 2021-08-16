@@ -1,0 +1,209 @@
+# Workflow to build Hercules AIO images separate by platform to avoid
+# issue #3 whereby the Github build runs out of memory building all
+# platforms in parallel
+name: Build all-in-one release image
+
+on:
+  # Allow manual runs.
+  workflow_dispatch:
+  # Also run on updates to this repo.
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+  # Run on PRs except for documentation
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+
+env:
+  IMAGE_NAME: hercules-aio
+  PUSH_IMAGE: ${{ github.ref == 'refs/heads/main' }}
+  DEFAULT_PACKETVER: '20190605'
+  BUILD_RELEASE: true
+
+jobs:
+
+  build-aio-release:
+    name: Build release
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        PLATFORM: ['linux/arm/v6','linux/arm/v7','linux/arm64/v8','linux/amd64']
+        HERCULES_SERVER_MODE: ['renewal', 'classic']
+        HERCULES_PACKET_VERSION: [ '20190605' ]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Generate platform shorthand
+        run: |
+          arch=$(grep "(\/.*$") ${{ matrix.PLATFORM }})
+          echo "PLATFORM_TAG=${arch//\//}" >> $GITHUB_ENV
+
+      - name: Get latest Hercules tag
+        run: |
+          cd hercules
+          git fetch --tags
+          LATEST_TAG_REV=$(git rev-list --tags --max-count 1)
+          HERCULES_TAG=$(git describe --tags ${LATEST_TAG_REV})
+          echo "HERCULES_TAG=${HERCULES_TAG}" >> $GITHUB_ENV
+          git checkout ${HERCULES_TAG}
+
+      - name: Check whether latest release needs building
+        if: ${{ env.PUSH_IMAGE == 'true' }}
+        run: |
+          # Check whether there already is a Docker image for the current tag
+          SERVER_TAGS=$(curl -s https://registry.hub.docker.com/v1/repositories/${{ secrets.DOCKERHUB_USERNAME }}/hercules/tags | jq -r ".[].name") || SERVER_TAGS="none"
+          for tag in ${SERVER_TAGS[@]}; do
+            if [[ "$tag" == "${HERCULES_TAG}" ]]; then
+              echo "Release ${tag} has already been built."
+              echo "BUILD_RELEASE=false" >> $GITHUB_ENV
+              break
+            fi
+          done
+
+      - name: Get Hercules packet version
+        run: |
+          if [ ${{ matrix.HERCULES_PACKET_VERSION }} == "latest" ]; then
+            # Extract packet version date string from source if we're building "latest"
+            HERCULES_PACKETVER=$(cat hercules/src/common/mmo.h | sed -n -e 's/^.*#define PACKETVER \(.*\)/\1/p')
+            echo "HERCULES_PACKETVER=${HERCULES_PACKETVER}" >> $GITHUB_ENV
+          else
+            # If we're building a specified packet version, just write that to the variable instead
+            echo "HERCULES_PACKETVER=${{ matrix.HERCULES_PACKET_VERSION }}" >> $GITHUB_ENV
+          fi
+
+      - name: Docker Setup QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Docker Setup Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        if: ${{ env.PUSH_IMAGE == 'true' }}
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        if: ${{ env.PUSH_IMAGE == 'true' }}
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build ${{ env.IMAGE_NAME }} Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: hercules-build
+          file: hercules-build/Dockerfile.all-in-one
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:${{ env.PLATFORM_TAG }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:${{ env.PLATFORM_TAG }}
+          platforms: ${{ matrix.PLATFORM }}
+          push: ${{ env.PUSH_IMAGE }}
+          build-args: |
+            HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
+            HERCULES_PACKET_VERSION=${{ env.HERCULES_PACKETVER }}
+            GIT_VERSION=${{ env.HERCULES_TAG }}
+
+  assemble-manifest-dockerhub:
+    name: Assemble DockerHub manifest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to DockerHub
+        if: ${{ env.PUSH_IMAGE == 'true' }}
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build multi-arch manifests for Docker Hub
+        if: ${{ matrix.HERCULES_SERVER_MODE == "classic" }}
+        run: |
+          docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:latest \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+          docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ env.HERCULES_TAG }} \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+
+      - name: Build multi-arch manifests for Docker Hub
+        run: |
+          docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }} \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+          docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }} \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+
+      - name: Push multi-arch manifests to Docker Hub
+        run: |
+          echo docker manifest push ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:latest
+          echo docker manifest push ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ env.HERCULES_TAG }}
+          echo docker manifest push ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
+          echo docker manifest push ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
+
+  assemble-manifest-ghcr:
+    name: Assemble GitHub Packages manifest
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Login to GitHub Container Registry
+        if: ${{ env.PUSH_IMAGE == 'true' }}
+        uses: docker/login-action@v1 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build multi-arch manifests for GitHub Packages
+        if: ${{ matrix.HERCULES_SERVER_MODE == "classic" }}
+        run: |
+          docker manifest create ghcr.io/${{ github.repository_owner }}/hercules:latest \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+          docker manifest create ghcr.io/${{ github.repository_owner }}/hercules:${{ env.HERCULES_TAG }} \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+
+      - name: Build multi-arch manifests for GitHub Packages
+        run: |
+          docker manifest create ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }} \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+          docker manifest create ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }} \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
+            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
+
+      - name: Push multi-arch manifests to GitHub Packages
+        run: |
+          echo docker manifest push ghcr.io/${{ github.repository_owner }}/hercules:latest
+          echo docker manifest push ghcr.io/${{ github.repository_owner }}/hercules:${{ env.HERCULES_TAG }}
+          echo docker manifest push ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
+          echo docker manifest push ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
