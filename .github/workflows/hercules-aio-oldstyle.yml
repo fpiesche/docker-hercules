@@ -132,7 +132,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build multi-arch manifests for Docker Hub
-        if: ${{ matrix.HERCULES_SERVER_MODE == 'classic' }}
+        if: ${{ matrix.HERCULES_SERVER_MODE }} == 'classic'
         run: |
           docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:latest \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
@@ -184,7 +184,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build multi-arch manifests for GitHub Packages
-        if: ${{ matrix.HERCULES_SERVER_MODE == "classic" }}
+        if: ${{ matrix.HERCULES_SERVER_MODE }} == 'classic'
         run: |
           docker manifest create ghcr.io/${{ github.repository_owner }}/hercules:latest \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
