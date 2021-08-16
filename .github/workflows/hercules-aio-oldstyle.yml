@@ -1,8 +1,6 @@
 # Workflow to build Hercules AIO images separate by platform to avoid
 # issue #3 whereby the Github build runs out of memory building all
 # platforms in parallel
-name: Build all-in-one release image
-
 on:
   # Allow manual runs.
   workflow_dispatch:
@@ -116,6 +114,7 @@ jobs:
 
   assemble-manifest-dockerhub:
     name: Assemble DockerHub manifest
+    needs: build-aio-release
     runs-on: ubuntu-latest
 
     strategy:
@@ -167,6 +166,7 @@ jobs:
 
   assemble-manifest-ghcr:
     name: Assemble GitHub Packages manifest
+    needs: build-aio-release
     runs-on: ubuntu-latest
 
     strategy:
