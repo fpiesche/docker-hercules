@@ -29,7 +29,8 @@ jobs:
 
     strategy:
       matrix:
-        PLATFORM: ['linux/arm/v6','linux/arm/v7','linux/arm64/v8','linux/amd64']
+        PLATFORM: ['linux/arm/v7','linux/arm64/v8','linux/amd64']
+        # PLATFORM: ['linux/arm/v6','linux/arm/v7','linux/arm64/v8','linux/amd64']
         HERCULES_SERVER_MODE: ['renewal', 'classic']
         HERCULES_PACKET_VERSION: [ '20190605' ]
 
@@ -135,12 +136,10 @@ jobs:
         if: ${{ matrix.HERCULES_SERVER_MODE }} == 'classic'
         run: |
           docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:latest \
-            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
           docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ env.HERCULES_TAG }} \
-            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
@@ -148,12 +147,10 @@ jobs:
       - name: Build multi-arch manifests for Docker Hub
         run: |
           docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }} \
-            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
           docker manifest create ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }} \
-            --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
@@ -188,12 +185,10 @@ jobs:
         if: ${{ matrix.HERCULES_SERVER_MODE }} == 'classic'
         run: |
           docker manifest create ghcr.io/${{ github.repository_owner }}/hercules:latest \
-            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
           docker manifest create ghcr.io/${{ github.repository_owner }}/hercules:${{ env.HERCULES_TAG }} \
-            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
@@ -201,12 +196,10 @@ jobs:
       - name: Build multi-arch manifests for GitHub Packages
         run: |
           docker manifest create ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }} \
-            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
           docker manifest create ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }} \
-            --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv6 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:armv7 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:arm64v8 \
             --amend ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}:amd64
