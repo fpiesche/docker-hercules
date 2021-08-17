@@ -40,7 +40,8 @@ jobs:
 
       - name: Generate platform shorthand
         run: |
-          arch=$(grep "(\/.*$") ${{ matrix.PLATFORM }})
+          plat=${{ matrix.PLATFORM }}
+          arch=${plat/linux//}
           echo "PLATFORM_TAG=${arch//\//}" >> $GITHUB_ENV
 
       - name: Get latest Hercules tag
