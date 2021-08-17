@@ -27,10 +27,9 @@ jobs:
   build-aio-release:
     name: Build release image
     runs-on: ubuntu-latest
-    concurrency: build
-
 
     strategy:
+      max-parallel: 1
       matrix:
         HERCULES_SERVER_MODE: ['renewal', 'classic']
         HERCULES_PACKET_VERSION: [ '20190605' ]
