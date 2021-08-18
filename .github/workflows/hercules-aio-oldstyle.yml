@@ -28,9 +28,9 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      max-parallel: 2
       matrix:
-        PLATFORM: ['linux/arm/v7','linux/arm64/v8','linux/amd64']
-        # PLATFORM: ['linux/arm/v6','linux/arm/v7','linux/arm64/v8','linux/amd64']
+        PLATFORM: ['linux/arm/v6','linux/arm/v7','linux/arm64/v8','linux/amd64']
         HERCULES_SERVER_MODE: ['renewal', 'classic']
         HERCULES_PACKET_VERSION: [ '20190605' ]
 
