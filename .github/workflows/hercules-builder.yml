@@ -16,8 +16,7 @@ on:
 env:
   PLATFORMS: linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/amd64
   IMAGE_NAME: hercules-builder
-  # PUSH_IMAGE: ${{ github.ref == 'refs/heads/main' }}
-  PUSH_IMAGE: 'true'
+  PUSH_IMAGE: ${{ github.ref == 'refs/heads/main' }}
 
 jobs:
 
