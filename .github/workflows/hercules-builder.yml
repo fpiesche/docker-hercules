@@ -3,16 +3,15 @@ name: Build Hercules build environment
 on:
   # Allow manual runs.
   workflow_dispatch:
-  # Also run on updates to this repo.
+  # Run on merges and PRs to builder Dockerfile.
   push:
     branches:
       - main
-    paths-ignore:
-      - '**/*.md'
-  # Run on PRs except for documentation
+    paths:
+      - 'hercules-build/docker-stages/create-builder.dockerfile'
   pull_request:
-    paths-ignore:
-      - '**/*.md'
+    paths:
+      - 'hercules-build/docker-stages/create-builder.dockerfile'
 
 env:
   PLATFORMS: linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/amd64
