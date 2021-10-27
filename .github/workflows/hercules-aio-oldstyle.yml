@@ -4,16 +4,6 @@
 on:
   # Allow manual runs.
   workflow_dispatch:
-  # Also run on updates to this repo.
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-  # Run on PRs except for documentation
-  pull_request:
-    paths-ignore:
-      - '**/*.md'
 
 env:
   IMAGE_NAME: hercules-aio
