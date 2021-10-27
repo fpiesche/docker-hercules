@@ -125,7 +125,7 @@ jobs:
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
             HERCULES_PACKET_VERSION=${{ env.HERCULES_PACKETVER }}
             GIT_VERSION=${{ env.HERCULES_TAG }}
-          outputs: type=tar,dest=${{ github.workspace }}/artifacts/
+          outputs: type=tar,dest=${{ github.workspace }}/artifacts/${{ env.HERCULES_IMAGE_TAG }}.tar
 
       - name: List artifacts output
         run: ls -la ${{ github.workspace }}/artifacts/
