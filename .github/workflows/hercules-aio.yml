@@ -46,6 +46,7 @@ jobs:
           LATEST_TAG_REV=$(git rev-list --tags --max-count 1)
           HERCULES_TAG=$(git describe --tags ${LATEST_TAG_REV})
           echo "HERCULES_TAG=${HERCULES_TAG}" >> $GITHUB_ENV
+          echo "HERCULES_IMAGE_TAG=${HERCULES_TAG//+/_} >> $GITHUB_ENV
           git checkout ${HERCULES_TAG}
 
       - name: Get Hercules packet version
@@ -86,18 +87,18 @@ jobs:
           cond: ${{ matrix.HERCULES_SERVER_MODE == 'classic' && env.HERCULES_PACKETVER == env.DEFAULT_PACKETVER }}
           if_true: |
             ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:latest
-            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ env.HERCULES_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ env.HERCULES_IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_IMAGE_TAG }}
             ghcr.io/${{ github.repository_owner }}/hercules:latest
-            ghcr.io/${{ github.repository_owner }}/hercules:${{ env.HERCULES_TAG }}
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
-            ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
+            ghcr.io/${{ github.repository_owner }}/hercules:${{ env.HERCULES_IMAGE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_IMAGE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_IMAGE_TAG }}
           if_false: |
-            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_TAG }}
-            ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_IMAGE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_IMAGE_TAG }}
+            ghcr.io/${{ github.repository_owner }}/hercules:${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}-${{ env.HERCULES_IMAGE_TAG }}
 
       - name: Login to DockerHub
         if: ${{ env.PUSH_IMAGE == 'true' }}
