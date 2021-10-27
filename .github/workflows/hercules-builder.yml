@@ -56,7 +56,7 @@ jobs:
           context: hercules-build
           file: hercules-build/docker-stages/create-builder.dockerfile
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules:latest
-            ghcr.io/${{ github.repository_owner }}/hercules:latest
+            ${{ secrets.DOCKERHUB_USERNAME || 'nobody' }}/hercules-builder:latest
+            ghcr.io/${{ github.repository_owner }}/hercules-builder:latest
           platforms: ${{ env.PLATFORMS }}
           push: ${{ env.PUSH_IMAGE }}
