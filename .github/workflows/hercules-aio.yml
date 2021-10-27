@@ -20,7 +20,6 @@ env:
   PUSH_IMAGE: ${{ github.ref == 'refs/heads/main' }}
   DEFAULT_PACKETVER: '20190605'
   BUILD_RELEASE: true
-  QEMU_STACK_SIZE: 268435456
 
 jobs:
 
@@ -115,15 +114,31 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Build ${{ env.IMAGE_NAME }} Docker image
+      - name: Build Hercules
         uses: docker/build-push-action@v2
         with:
           context: hercules-build
-          file: hercules-build/Dockerfile.all-in-one
-          tags: ${{ steps.image_tags.outputs.value }}
+          file: hercules-build/docker-stages/build-hercules.dockerfile
           platforms: ${{ env.PLATFORMS }}
-          push: ${{ env.PUSH_IMAGE }}
+          push: false
           build-args: |
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
             HERCULES_PACKET_VERSION=${{ env.HERCULES_PACKETVER }}
             GIT_VERSION=${{ env.HERCULES_TAG }}
+          outputs: type=tar,dest=${{ github.workspace }}/artifacts/
+
+      - name: List artifacts output
+        run: ls -la ${{ github.workspace }}/artifacts/
+
+      # - name: Build ${{ env.IMAGE_NAME }} Docker image
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: hercules-build
+      #     file: hercules-build/Dockerfile.all-in-one
+      #     tags: ${{ steps.image_tags.outputs.value }}
+      #     platforms: ${{ env.PLATFORMS }}
+      #     push: ${{ env.PUSH_IMAGE }}
+      #     build-args: |
+      #       HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
+      #       HERCULES_PACKET_VERSION=${{ env.HERCULES_PACKETVER }}
+      #       GIT_VERSION=${{ env.HERCULES_TAG }}

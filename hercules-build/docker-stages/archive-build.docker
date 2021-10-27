@@ -1,6 +1,0 @@
-###
-# Copy build archive to host
-###
-
-FROM scratch AS exporter
-COPY --from=builder /home/builder/*.tar.gz /

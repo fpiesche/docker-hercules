@@ -1,7 +1,7 @@
 ###
-# Build Hercules server and assemble distribution
+# Build Hercules
 ###
-FROM alpine:3.14 AS builder
+FROM florianpiesche/hercules-builder:latest AS builder
 
 # Set this to "classic" or "renewal" to build the relevant server version (default: classic).
 ARG HERCULES_SERVER_MODE=classic
@@ -20,16 +20,6 @@ ARG HERCULES_BUILD_OPTS
 # You can pass in a git commit reference or tag to build that specific version
 ARG GIT_VERSION
 
-# Install build dependencies.
-RUN apk add --no-cache build-base git mariadb-dev pcre-dev linux-headers
-
-# Create a build user
-RUN adduser --home /home/builder --shell /bin/ash --gecos "builder" --disabled-password builder
-
-# Copy the Hercules build script and distribution template
-VOLUME /home/builder
-ADD --chown=builder files/builder /home/builder/
-
 # Run the build
 USER builder
 ENV WORKSPACE=/home/builder
@@ -38,3 +28,7 @@ ENV HERCULES_PACKET_VERSION=${HERCULES_PACKET_VERSION}
 ENV HERCULES_SERVER_MODE=${HERCULES_SERVER_MODE}
 ENV HERCULES_BUILD_OPTS=${HERCULES_BUILD_OPTS}
 RUN ["/bin/ash", "/home/builder/build-hercules.sh"]
+
+# Copy the build archive to the host
+FROM scratch AS exporter
+COPY --from=builder /home/builder/*.tar.gz /
