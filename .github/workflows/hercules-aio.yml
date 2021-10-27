@@ -46,7 +46,7 @@ jobs:
           LATEST_TAG_REV=$(git rev-list --tags --max-count 1)
           HERCULES_TAG=$(git describe --tags ${LATEST_TAG_REV})
           echo "HERCULES_TAG=${HERCULES_TAG}" >> $GITHUB_ENV
-          echo "HERCULES_IMAGE_TAG=${HERCULES_TAG//+/_} >> $GITHUB_ENV
+          echo "HERCULES_IMAGE_TAG=${HERCULES_TAG//+/_}" >> $GITHUB_ENV
           git checkout ${HERCULES_TAG}
 
       - name: Get Hercules packet version
