@@ -29,6 +29,6 @@ ENV HERCULES_SERVER_MODE=${HERCULES_SERVER_MODE}
 ENV HERCULES_BUILD_OPTS=${HERCULES_BUILD_OPTS}
 RUN ["/bin/ash", "/home/builder/build-hercules.sh"]
 
-# Copy the build archive to the host
+# Copy the build archive to a new image for export using Docker's --output option
 FROM scratch AS exporter
 COPY --from=builder /home/builder/*.tar.gz /
