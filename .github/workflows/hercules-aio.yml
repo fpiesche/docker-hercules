@@ -15,7 +15,8 @@ on:
       - '**/*.md'
 
 env:
-  PLATFORMS: linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/amd64
+  PLATFORMS: linux/arm64/v8,linux/amd64
+  # PLATFORMS: linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/amd64
   IMAGE_NAME: hercules-aio
   PUSH_IMAGE: ${{ github.ref == 'refs/heads/main' }}
   DEFAULT_PACKETVER: '20190605'
@@ -28,7 +29,6 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      max-parallel: 1
       matrix:
         HERCULES_SERVER_MODE: ['renewal', 'classic']
         HERCULES_PACKET_VERSION: [ '20190605' ]
