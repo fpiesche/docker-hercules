@@ -1,4 +1,4 @@
-branches: default
+branches: main
 
 matrix:
   HERCULES_SERVER_MODE:
