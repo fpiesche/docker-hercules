@@ -10,7 +10,7 @@ matrix:
 
 pipeline:
   docker-build:
-    image: thegeeklab/drone-docker-buildx
+    image: plugins/docker-buildx
     secrets:
       - dockerhub_username
       - dockerhub_token
