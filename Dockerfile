@@ -41,26 +41,19 @@ COPY --chown=builduser . /home/builduser
 
 # Run the build
 USER builduser
-ENV WORKSPACE=/home/builduser
-ENV HERCULES_SRC=/home/builduser/hercules
-ENV DISABLE_MANAGER_ARM64=true
-ENV HERCULES_RELEASE=${HERCULES_RELEASE}
-ENV HERCULES_PACKET_VERSION=${HERCULES_PACKET_VERSION}
-ENV HERCULES_SERVER_MODE=${HERCULES_SERVER_MODE}
-ENV HERCULES_BUILD_OPTS=${HERCULES_BUILD_OPTS}
-ENV BUILD_IDENTIFIER=hercules
+ENV WORKSPACE=/home/builduser  HERCULES_SRC=/home/builduser/hercules DISABLE_MANAGER_ARM64=true \
+    HERCULES_RELEASE=${HERCULES_RELEASE} HERCULES_PACKET_VERSION=${HERCULES_PACKET_VERSION} \
+    HERCULES_SERVER_MODE=${HERCULES_SERVER_MODE} HERCULES_BUILD_OPTS=${HERCULES_BUILD_OPTS} \
+    BUILD_IDENTIFIER=hercules
 ENV DISTRIB_PATH=${WORKSPACE}/distrib
 ENV BUILD_TARGET=${DISTRIB_PATH}/${BUILD_IDENTIFIER}
 
 WORKDIR /home/builduser
 RUN ${WORKSPACE}/create-env-file.sh
-RUN cat ${WORKSPACE}/.buildenv
 RUN ${WORKSPACE}/configure-build.sh
-RUN cd ${HERCULES_SRC} && cat Makefile && exit 1
 RUN cd ${HERCULES_SRC} && make
 RUN ${WORKSPACE}/assemble-distribution.sh
 RUN ${WORKSPACE}/create-version-file.sh
-
 
 ###
 # STAGE 2: EXPORT BUILD
@@ -99,18 +92,11 @@ COPY --from=build_hercules --chown=hercules /home/builduser/distrib/ /
 EXPOSE 6900 6121 5121
 
 # Environment variables
-ENV DATABASE_HOST=db
-ENV DATABASE_PORT=3306
-ENV DATABASE_USER=ragnarok
-ENV DATABASE_PASSWORD=ragnarok
-ENV DATABASE_DB=ragnarok
-ENV SERVER_NAME="Ragnarok Online"
-ENV WISP_SERVER_NAME="RagnarokOnline"
-ENV INTERSERVER_USER="wisp"
-ENV INTERSERVER_PASSWORD="wisp"
-ENV LOGIN_SERVER_HOST="localhost"
-ENV MAP_SERVER_HOST="localhost"
-ENV CHAR_SERVER_HOST="localhost"
+ENV DATABASE_HOST=db DATABASE_PORT=3306 DATABASE_USER=ragnarok DATABASE_PASSWORD=ragnarok \
+    DATABASE_DB=ragnarok SERVER_NAME="Ragnarok Online" WISP_SERVER_NAME="RagnarokOnline" \
+    INTERSERVER_USER="wisp" INTERSERVER_PASSWORD="wisp" LOGIN_SERVER_HOST="localhost" \
+    MAP_SERVER_HOST="localhost" CHAR_SERVER_HOST="localhost"
+
 USER hercules
 WORKDIR /hercules
 VOLUME /hercules/conf/import
