@@ -6,7 +6,12 @@ echo PLATFORM=${PLATFORM} >> ${ENVFILE}
 echo BUILD_TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S") >> ${ENVFILE}
 
 # Get the tag for the current commit if present or just the short commit ID
-GIT_VERSION=$(cd ${HERCULES_SRC} && (git describe --tags --exact-match 2> /dev/null || git rev-parse --short HEAD))
+if [[ ${HERCULES_RELEASE} != "latest" ]]; then
+   GIT_VERSION=${HERCULES_RELEASE}
+else
+   GIT_VERSION=$(cd ${HERCULES_SRC} && (git describe --tags --exact-match 2> /dev/null || git rev-parse --short HEAD))
+fi
+
 if [[ ${GIT_VERSION} == "" ]]; then
    echo "Failed to get git tag or commit ID for Hercules source directory!"
    exit 1

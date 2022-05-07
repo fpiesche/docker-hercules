@@ -15,6 +15,9 @@ ARG HERCULES_SERVER_MODE=classic
 # Hercules forums is using the packet version 20180418.
 ARG HERCULES_PACKET_VERSION=latest
 
+# The version of Hercules to build.
+ARG HERCULES_RELEASE="latest"
+
 # You can pass in any further command line options for the build with the HERCULES_BUILD_OPTS
 # build argument.
 ARG HERCULES_BUILD_OPTS
@@ -41,6 +44,7 @@ USER builduser
 ENV WORKSPACE=/home/builduser
 ENV HERCULES_SRC=/home/builduser/hercules
 ENV DISABLE_MANAGER_ARM64=true
+ENV HERCULES_RELEASE=${HERCULES_RELEASE}
 ENV HERCULES_PACKET_VERSION=${HERCULES_PACKET_VERSION}
 ENV HERCULES_SERVER_MODE=${HERCULES_SERVER_MODE}
 ENV HERCULES_BUILD_OPTS=${HERCULES_BUILD_OPTS}

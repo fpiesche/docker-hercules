@@ -83,3 +83,4 @@ jobs:
           build-args: |
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
             HERCULES_PACKET_VERSION=${{ matrix.HERCULES_PACKET_VERSION }}
+            HERCULES_RELEASE=${{ env.HERCULES_VERSION }}
