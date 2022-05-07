@@ -23,7 +23,7 @@ ARG HERCULES_RELEASE="latest"
 ARG HERCULES_BUILD_OPTS
 
 # Install build dependencies.
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   gcc \
   git \
   libmariadb-dev \
@@ -56,6 +56,7 @@ WORKDIR /home/builduser
 RUN ${WORKSPACE}/create-env-file.sh
 RUN cat ${WORKSPACE}/.buildenv
 RUN ${WORKSPACE}/configure-build.sh
+RUN cd ${HERCULES_SRC} && cat Makefile && exit 1
 RUN cd ${HERCULES_SRC} && make
 RUN ${WORKSPACE}/assemble-distribution.sh
 RUN ${WORKSPACE}/create-version-file.sh
@@ -113,4 +114,4 @@ ENV CHAR_SERVER_HOST="localhost"
 USER hercules
 WORKDIR /hercules
 VOLUME /hercules/conf/import
-CMD /hercules/docker-entrypoint.sh
+CMD [ "/hercules/docker-entrypoint.sh" ]
