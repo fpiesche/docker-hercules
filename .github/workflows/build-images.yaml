@@ -59,11 +59,20 @@ jobs:
           cd hercules
           git checkout ${HERCULES_VERSION}
 
+      - name: Get Hercules packet version
+        run: |
+          if [[ ${{ matrix.HERCULES_PACKET_VERSION }} == "latest" ]]; then
+            PACKETVER=$(sed -n -e 's/^.*#define PACKETVER \(.*\)/\1/p' hercules/src/common/mmo.h)
+          else
+            PACKETVER=${{ matrix.HERCULES_PACKET_VERSION }}
+          fi
+          echo "HERCULES_PACKETVER=$PACKETVER" >> $GITHUB_ENV
+
       - name: Check whether latest release needs building
         if: ${{ env.PUSH_IMAGE == 'true' }}
         run: |
           # Check whether there already is a Docker image for the current tag
-          SERVER_TAGS=$(curl -s https://registry.hub.docker.com/v1/repositories/${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ matrix.HERCULES_PACKET_VERSION }}/tags | jq -r ".[].name") || SERVER_TAGS="none"
+          SERVER_TAGS=$(curl -s https://registry.hub.docker.com/v1/repositories/${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}/tags | jq -r ".[].name") || SERVER_TAGS="none"
           for tag in ${SERVER_TAGS[@]}; do
             if [[ "$tag" == "${HERCULES_VERSION}" ]]; then
               echo "Release ${tag} has already been built."
@@ -102,10 +111,10 @@ jobs:
           file: Dockerfile
           push: ${{ env.PUSH_IMAGE }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:${{ env.HERCULES_VERSION }}
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:latest
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:${{ env.HERCULES_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:latest
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
           platforms: ${{ env.PLATFORMS }}
           build-args: |
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
