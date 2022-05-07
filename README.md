@@ -1,4 +1,4 @@
-[![Build Status](https://drone.yellowkeycard.net/api/badges/outrider/hercules-docker/status.svg)](https://drone.yellowkeycard.net/outrider/hercules-docker)
+[![Docker images](https://github.com/fpiesche/docker-hercules/actions/workflows/build-images.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/build-images.yaml)
 
 # docker-hercules
 
