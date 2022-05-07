@@ -1,9 +1,9 @@
 ###
 # STAGE 1: BUILD HERCULES
-# We'll build Hercules on Debian Buster's "slim" image.
+# We'll build Hercules on Debian Bullseye's "slim" image.
 # This minimises dependencies and download times for the builder.
 ###
-FROM --platform=${TARGETPLATFORM:-linux/arm/v6} debian:buster-slim AS build_hercules
+FROM debian:bullseye-slim AS build_hercules
 
 # Set this to "classic" or "renewal" to build the relevant server version (default: classic).
 ARG HERCULES_SERVER_MODE=classic
@@ -33,31 +33,48 @@ RUN apt-get update && apt-get install -y \
 # Create a build user
 RUN adduser --home /home/builduser --shell /bin/bash --gecos "builduser" --disabled-password builduser
 
-# Copy the Hercules build script and distribution template
-COPY --chown=builduser builder /home/builduser
+# Copy the repo into the build container
+COPY --chown=builduser . /home/builduser
 
 # Run the build
 USER builduser
 ENV WORKSPACE=/home/builduser
+ENV HERCULES_SRC=/home/builduser/hercules
 ENV DISABLE_MANAGER_ARM64=true
-ENV PLATFORM=${TARGETPLATFORM:-linux/arm/v6}
 ENV HERCULES_PACKET_VERSION=${HERCULES_PACKET_VERSION}
 ENV HERCULES_SERVER_MODE=${HERCULES_SERVER_MODE}
 ENV HERCULES_BUILD_OPTS=${HERCULES_BUILD_OPTS}
-RUN /home/builduser/build-hercules.sh
+ENV BUILD_IDENTIFIER=hercules
+ENV DISTRIB_PATH=${WORKSPACE}/distrib
+ENV BUILD_TARGET=${DISTRIB_PATH}/${BUILD_IDENTIFIER}
+
+WORKDIR /home/builduser
+RUN ${WORKSPACE}/create-env-file.sh
+RUN cat ${WORKSPACE}/.buildenv
+RUN ${WORKSPACE}/configure-build.sh
+RUN cd ${HERCULES_SRC} && make
+RUN ${WORKSPACE}/assemble-distribution.sh
+RUN ${WORKSPACE}/create-version-file.sh
+
 
 ###
-# STAGE 2: BUILD IMAGE
+# STAGE 2: EXPORT BUILD
+# Here, we just copy the build into an empty Docker image so that it
+# can be easily exported, e.g. to a tarball.
+###
+
+FROM scratch as export_build
+COPY --from=build_hercules /home/builduser/distrib/ /
+
+###
+# STAGE 3: BUILD IMAGE
 # Here, we pick a clean minimal base image, install what dependencies
 # we do need and then copy the build artifact from the build stage
 # into it. Doing this as a separate stage from the build minimises
 # final image size.
 ###
 
-# We're picking the python:3-slim image as the base because
-# unlike Alpine, this supports binary wheels which will minimise
-# build time and image size for Autolycus's dependencies.
-FROM --platform=${TARGETPLATFORM:-linux/arm/v7} python:3-slim AS build_image
+FROM debian:bullseye-slim AS build_image
 
 # Install base system dependencies and create user.
 RUN \
@@ -65,18 +82,10 @@ RUN \
   apt-get install -y \
   libmariadb3 \
   # libmysqlclient20 \
-  libmariadbclient-dev \
+  # libmariadbclient-dev \
   libmariadb-dev-compat \
-  python3-pip \
   && rm -rf /var/lib/apt/lists/*
 RUN useradd --no-log-init -r hercules
-
-# Install Autolycus dependencies - we're doing this as a separate step
-# to optimise build cache usage. Docker will cache the image with the
-# Python dependencies installed and reuse this for subsequent builds.
-ENV PLATFORM=${TARGETPLATFORM}
-COPY --from=build_hercules --chown=hercules /home/builduser/distrib/autolycus/requirements.txt /autolycus/
-RUN pip3 install -r /autolycus/requirements.txt 
 
 # Copy the actual distribution from builder image
 COPY --from=build_hercules --chown=hercules /home/builduser/distrib/ /
@@ -84,7 +93,20 @@ COPY --from=build_hercules --chown=hercules /home/builduser/distrib/ /
 # Login server, Character server, Map server
 EXPOSE 6900 6121 5121
 
+# Environment variables
+ENV DATABASE_HOST=db
+ENV DATABASE_PORT=3306
+ENV DATABASE_USER=ragnarok
+ENV DATABASE_PASSWORD=ragnarok
+ENV DATABASE_DB=ragnarok
+ENV SERVER_NAME="Ragnarok Online"
+ENV WISP_SERVER_NAME="RagnarokOnline"
+ENV INTERSERVER_USER="wisp"
+ENV INTERSERVER_PASSWORD="wisp"
+ENV LOGIN_SERVER_HOST="localhost"
+ENV MAP_SERVER_HOST="localhost"
+ENV CHAR_SERVER_HOST="localhost"
 USER hercules
 WORKDIR /hercules
-ENTRYPOINT /autolycus/autolycus.py -p /hercules setup_all && \
-  /autolycus/autolycus.py -p /hercules start && tail -f /hercules/log/*
+VOLUME /hercules/conf/import
+CMD /hercules/docker-entrypoint.sh

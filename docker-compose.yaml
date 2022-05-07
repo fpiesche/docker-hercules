@@ -50,7 +50,6 @@ services:
             # or destroy and rebuild the container, your configuration
             # will persist.
             - configuration:/hercules/conf/import
-            - sql_init:/hercules/sql-files/
 
     # This service will cause Docker to also bring up a database service to
     # use with your Hercules servers. Having a separate container for this is useful

@@ -1,6 +1,6 @@
 [![Build Status](https://drone.yellowkeycard.net/api/badges/outrider/hercules-docker/status.svg)](https://drone.yellowkeycard.net/outrider/hercules-docker)
 
-# hercules-docker
+# docker-hercules
 
 A Docker setup for building and containerising the Ragnarok Online server emulator Hercules
 
@@ -15,23 +15,30 @@ If you want to know what Docker is, [here is a good overview](https://www.zdnet.
 
 # How does this work?
 
-The Dockerfile is a two-stage definition for Docker:
+The Dockerfile is a three-stage definition for Docker:
 
-- Step 1 (`build_hercules`) will bring up a Linux (Debian Buster, specifically) container, install
-all the necessary requirements for compiling Hercules, build Hercules and package the build up in a
-.tar.gz file.
+- Step 1 (`build_hercules`) will bring up a Linux (Debian Bullseye, specifically) container, install
+all the necessary requirements for compiling Hercules, build Hercules and copy all the files required
+for Hercules alone into a separate distribution directory *inside the container*.
 
-- Step 2 (`build_image`) will then take the build produced by step 1 and deploy it inside another
-Debian Buster container, all prepared so you can simply run the Hercules server with a single
-`docker run`.
+- Step 2 (`export_build`) will copy the distribution created in the `build_hercules` step to an empty
+container. This can be used to easily copy the build out of the build containers to your host machine
+by using [the `--output` parameter for `docker build`](https://docs.docker.com/engine/reference/commandline/build/#custom-build-outputs):
+`docker build --target export_build --output type=tar,dest=hercules.tar` will build Hercules and
+save the finished build in the `hercules.tar` archive in your current directory.
+
+- Step 3 (`build_image`) will take the build produced by the `build_hercules` step and copy it into
+another Debian Bullseye container, all prepared so you can simply run the Hercules server with a single
+`docker run` command.
 
 If you just want to run a server without making your own build, there are standard images built and
 published from this repository via
 [an automated weekly build](https://github.com/fpiesche/hercules-docker/actions).
 
 These images are always built with the current release version of Hercules, for Intel/AMD
-(most home computers), ARMv7 (Raspberry Pi 2 and equivalents) and ARM64 (Raspberry Pi 3 or 4 and
-equivalents) systems and available in both Classic and Renewal mode.
+(most home computers), ARMv6 (Raspberry Pi 1), ARMv7 (Raspberry Pi 2 and equivalents) and
+ARM64 (Raspberry Pi 3 or 4 and equivalents) systems and available in both Classic and
+Renewal mode.
 
 # How do I run a Ragnarok Online server with this?
 
@@ -67,10 +74,6 @@ The database service is isolated within the Docker network for security - this m
 game servers can connect to it, nobody else can. This does however mean that you cannot connect
 to it with a MySQL client to create an account as is normally recommended by Hercules.
 
-However, the pre-built images come with [Autolycus](https://github.com/fpiesche/autolycus), my
-server manager. Currently this does not have a web interface for creating accounts, but it does
-make creating accounts without needing access to the database easy.
-
 - First, from a command-line/terminal window, connect to the game server container using
   `docker exec -it hercules-docker_game_servers /bin/bash`.
 - Within the shell on the container, simply run:
@@ -89,8 +92,7 @@ Simply run `docker build . -t hercules`. This will run the build and package it 
 
 You can run only the first stage of the Dockerfile to build Hercules without packaging it up in an image. To just build Hercules and copy the build to your local machine, run:
 
-  - `docker build . -t hercules --target build_hercules`
-  - `docker cp hercules:/hercules*.tar.gz .`
+  - `docker build . -t hercules --target export_build --output type=local,dest=out.tar`
 
 Note that this **will** be a Linux build, so if you want to run this on a Windows host you might need to put some more work in. I'd be happy to accept pull requests to make this all work with and produce Windows builds, too!
 
@@ -102,6 +104,4 @@ To build a Renewal rather than a Classic server or a specific packet version, mo
 
 # I'm a developer on Hercules or a plugin. Can I use this with my own copy of the source?
 
-Sure you can! Simply mount your local copy of the source in the build container at `/builder/hercules-src`:
-
-* `docker build . -t hercules --mount type=bind,source=/home/me/my-hercules-source,destination=/builder/hercules-src`
+Sure you can! Simply remove the existing `hercules` directory in this repository and copy your copy of the source code there instead.

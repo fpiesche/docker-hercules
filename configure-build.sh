@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ${WORKSPACE}/.buildenv
+cd ${HERCULES_SRC}
+./configure ${HERCULES_BUILD_OPTS} ${MEMORY_MANAGER_PARAM} ${SERVER_MODE_PARAM} ${PACKETVER_PARAM}
