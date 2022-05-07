@@ -1,11 +1,11 @@
 #!/bin/bash
 ENVFILE=${WORKSPACE}/.buildenv
-PLATFORM=$(uname -m)
 
+PLATFORM=$(uname -m)
 echo PLATFORM=${PLATFORM} >> ${ENVFILE}
 echo BUILD_TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S") >> ${ENVFILE}
 
-# Get the tag for the current commit if present or just the short commit ID
+# Get the current release tag if present or just the short commit ID
 if [[ ${HERCULES_RELEASE} != "latest" ]]; then
    GIT_VERSION=${HERCULES_RELEASE}
 else
@@ -25,15 +25,15 @@ if [[ ${PLATFORM} == "aarch64" ]] && [[ ! -z ${DISABLE_MANAGER_ARM64} ]]; then
    echo MEMORY_MANAGER_PARAM="--disable-manager" >> ${ENVFILE}
 fi
 
-# Set the packet version.
+# Set packet version either to ${HERCULES_PACKET_VERSIN} or what's defined in src/common/mmo.h as current.
 if [[ ! -z "${HERCULES_PACKET_VERSION}" && ${HERCULES_PACKET_VERSION} != "latest" ]]; then
    echo PACKETVER_PARAM="--enable-packetver=${HERCULES_PACKET_VERSION}" >> ${ENVFILE}
 else
-   PACKETVER_FROM_SOURCE=$(cat ${HERCULES_SRC}/src/common/mmo.h | sed -n -e 's/^.*#define PACKETVER \(.*\)/\1/p') >> ${ENVFILE}
+   PACKETVER_FROM_SOURCE=$(cat ${HERCULES_SRC}/src/common/mmo.h | sed -n -e 's/^.*#define PACKETVER \(.*\)/\1/p')
    echo PACKETVER_PARAM="--enable-packetver=${PACKETVER_FROM_SOURCE}" >> ${ENVFILE}
 fi
 
-# Disable Renewal on Classic mode builds
+# If classic mode is specified, add the --disable-renewal build option
 if [[ ${HERCULES_SERVER_MODE} == "classic" ]]; then
    echo SERVER_MODE_PARAM="--disable-renewal" >> ${ENVFILE}
 elif [[ ${HERCULES_SERVER_MODE} != "renewal" ]]; then
