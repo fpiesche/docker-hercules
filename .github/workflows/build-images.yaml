@@ -33,11 +33,9 @@ jobs:
 
       - name: Get latest release tag
         run: |
-          cd hercules
-          git fetch --tags
-          LATEST_TAG_REV=$(git rev-list --tags --max-count 1)
-          HERCULES_VERSION=$(git describe --tags ${LATEST_TAG_REV})
+          HERCULES_VERSION=$(basename $(curl -fs -o/dev/null -w %{redirect_url} https://github.com/HerculesWS/Hercules/releases/latest))
           echo "HERCULES_VERSION=${HERCULES_VERSION}" >> $GITHUB_ENV
+          cd hercules
           git checkout ${HERCULES_VERSION}
 
       - name: Check whether latest release needs building
