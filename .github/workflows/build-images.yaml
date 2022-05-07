@@ -67,6 +67,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to GitHub Container Registry
+        if: ${{ env.PUSH_IMAGE == 'true' }}
+        uses: docker/login-action@v2 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
       - name: Build and publish images
         if: ${{ env.BUILD_RELEASE == 'true' }}
         uses: docker/build-push-action@v2
@@ -74,10 +82,10 @@ jobs:
           file: Dockerfile
           push: ${{ env.PUSH_IMAGE }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ matrix.HERCULES_PACKET_VERSION }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ matrix.HERCULES_PACKET_VERSION }}:${{ env.HERCULES_VERSION }}
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ matrix.HERCULES_PACKET_VERSION }}:latest
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ matrix.HERCULES_PACKET_VERSION }}:${{ env.HERCULES_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:${{ env.HERCULES_VERSION }}
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:latest
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ matrix.HERCULES_PACKET_VERSION }}:${{ env.HERCULES_VERSION }}
           platforms: ${{ env.PLATFORMS }}
           build-args: |
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
