@@ -77,7 +77,7 @@ jobs:
       - name: Check whether latest release needs building
         if: ${{ env.PUSH_IMAGE == 'true' }}
         run: |
-          if [[ ${{ env.GITHUB_EVENT_NAME }} == "workflow_dispatch" ]]; then
+          if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
               echo "Workflow triggered manually; building container."
               echo "BUILD_RELEASE=true" >> $GITHUB_ENV
               exit
