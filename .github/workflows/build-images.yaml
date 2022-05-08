@@ -59,7 +59,9 @@ jobs:
       - name: Get latest release tag
         run: |
           HERCULES_VERSION=$(basename $(curl -fs -o/dev/null -w %{redirect_url} https://github.com/HerculesWS/Hercules/releases/latest))
+          HERCULES_REVISION=$(git show-ref --dereference --tags -s refs/tags/${HERCULES_VERSION})
           echo "HERCULES_VERSION=${HERCULES_VERSION}" >> $GITHUB_ENV
+          echo "HERCULES_REVISION=${HERCULES_REVISION}" >> $GITHUB_ENV
           cd hercules
           git checkout ${HERCULES_VERSION}
 
@@ -108,17 +110,35 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      - name: Generate Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ env.HERCULES_VERSION }}
+          labels: |
+            org.opencontainers.image.title=Hercules ${{ env.HERCULES_VERSION }} (${{ matrix.HERCULES_SERVER_MODE }}, packet version ${{ env.HERCULES_PACKETVER }})
+            org.opencontainers.image.description=A Dockerised Linux build of the Ragnarok Online server emulator Hercules, based on `debian:bullseye-slim`.
+            org.opencontainers.image.vendor=Florian Piesche <florian@yellowkeycard.net>
+            org.opencontainers.image.authors=Florian Piesche <florian@yellowkeycard.net>
+            org.opencontainers.image.version=${{ env.HERCULES_VERSION }}
+            org.opencontainers.image.revision=${{ env.HERCULES_REVISION }}
+            org.opencontainers.image.licenses=GPL-3.0
+
       - name: Build and publish images
         if: ${{ env.BUILD_RELEASE == 'true' }}
         uses: docker/build-push-action@v2
         with:
           file: Dockerfile
           push: ${{ env.PUSH_IMAGE }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:latest
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ env.PLATFORMS }}
           build-args: |
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
