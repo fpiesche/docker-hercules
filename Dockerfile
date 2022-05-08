@@ -77,10 +77,8 @@ FROM debian:bullseye-slim AS build_image
 # Install base system dependencies and create user.
 RUN \
   apt-get update && \
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
   libmariadb3 \
-  # libmysqlclient20 \
-  # libmariadbclient-dev \
   libmariadb-dev-compat \
   && rm -rf /var/lib/apt/lists/*
 RUN useradd --no-log-init -r hercules
