@@ -77,6 +77,11 @@ jobs:
       - name: Check whether latest release needs building
         if: ${{ env.PUSH_IMAGE == 'true' }}
         run: |
+          if [[ ${{ env.GITHUB_EVENT_NAME == "workflow_dispatch" }}]]; then
+              echo "Workflow triggered manually; building container."
+              echo "BUILD_RELEASE=true" >> $GITHUB_ENV
+              exit
+          fi
           # Check whether there already is a Docker image for the current tag
           SERVER_TAGS=$(curl -s https://registry.hub.docker.com/v1/repositories/${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}/tags | jq -r ".[].name") || SERVER_TAGS="none"
           for tag in ${SERVER_TAGS[@]}; do
