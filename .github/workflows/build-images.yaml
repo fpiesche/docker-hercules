@@ -115,10 +115,10 @@ jobs:
           file: Dockerfile
           push: ${{ env.PUSH_IMAGE }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:latest
-            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver-${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:latest
+            ghcr.io/${{ github.repository_owner }}/hercules-${{ matrix.HERCULES_SERVER_MODE }}-packetver${{ env.HERCULES_PACKETVER }}:${{ env.HERCULES_VERSION }}
           platforms: ${{ env.PLATFORMS }}
           build-args: |
             HERCULES_SERVER_MODE=${{ matrix.HERCULES_SERVER_MODE }}
