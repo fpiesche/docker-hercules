@@ -90,10 +90,10 @@ COPY --from=build_hercules --chown=hercules /home/builduser/distrib/ /
 EXPOSE 6900 6121 5121
 
 # Environment variables
-ENV DATABASE_HOST=db DATABASE_PORT=3306 DATABASE_USER=ragnarok DATABASE_PASSWORD=ragnarok \
-    DATABASE_DB=ragnarok SERVER_NAME="Ragnarok Online" WISP_SERVER_NAME="RagnarokOnline" \
-    INTERSERVER_USER="wisp" INTERSERVER_PASSWORD="wisp" LOGIN_SERVER_HOST="localhost" \
-    MAP_SERVER_HOST="localhost" CHAR_SERVER_HOST="localhost"
+ENV HERCULES_DB_HOST=db HERCULES_DB_PORT=3306 HERCULES_DB_USERNAME=ragnarok HERCULES_DB_PASSWORD=ragnarok \
+    HERCULES_DB_NAME=ragnarok HERCULES_SERVER_NAME="Ragnarok Online" WISP_SERVER_NAME="RagnarokOnline" \
+    HERCULES_INTERSERVER_USER="wisp" HERCULES_INTERSERVER_PASSWORD="wisp" HERCULES_LOGIN_SERVER_HOST="localhost" \
+    HERCULES_MAP_SERVER_HOST="localhost" HERCULES_CHAR_SERVER_HOST="localhost"
 
 USER hercules
 WORKDIR /hercules
