@@ -34,3 +34,4 @@ jobs:
           level: info
           hadolint_ignore: DL3003 DL3008
           filter_mode: nofilter
+          fail_on_error: true

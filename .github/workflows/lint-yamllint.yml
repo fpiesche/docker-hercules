@@ -35,4 +35,4 @@ jobs:
           reporter: ${{ env.REVIEWDOG_REPORTER }}
           level: info
           filter_mode: nofilter
-
+          fail_on_error: true
