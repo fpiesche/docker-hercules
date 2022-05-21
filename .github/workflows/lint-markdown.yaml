@@ -1,0 +1,25 @@
+name: Lint Markdown files
+
+on:
+  # Allow manual runs.
+  workflow_dispatch:
+  # Also run on updates to this repo.
+  push:
+    paths:
+      - '*.md'
+  pull_request:
+    paths:
+      - '*.md'
+
+jobs:
+  hadolint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+      - name: Lint Dockerfile
+        uses: reviewdog/action-markdownlint@v0
+        with:
+          github_token: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
+          reporter: github-pr-review
+          level: info
