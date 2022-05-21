@@ -33,3 +33,4 @@ jobs:
           reporter: ${{ env.REVIEWDOG_REPORTER }}
           level: info
           hadolint_ignore: DL3003 DL3008
+          filter_mode: nofilter

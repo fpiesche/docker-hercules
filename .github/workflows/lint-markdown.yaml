@@ -32,3 +32,4 @@ jobs:
           github_token: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
           reporter: ${{ env.REVIEWDOG_REPORTER }}
           level: info
+          filter_mode: nofilter
