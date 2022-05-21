@@ -32,4 +32,4 @@ jobs:
           github_token: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
           reporter: ${{ env.REVIEWDOG_REPORTER }}
           level: info
-          hadolint_ignore: DL3003,DL3008
+          hadolint_ignore: DL3003 DL3008
