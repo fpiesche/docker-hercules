@@ -1,4 +1,6 @@
 [![Docker images](https://github.com/fpiesche/docker-hercules/actions/workflows/build-images.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/build-images.yaml)
+[![hadolint](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-docker.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-docker.yaml) [![Helm](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-helm.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-helm.yaml) [![Markdown](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-markdown.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-markdown.yaml) [![Shellcheck](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-shellcheck.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-shellcheck.yaml) [![yamllint](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-yamllint.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-yamllint.yaml)
+
 
 # docker-hercules
 
