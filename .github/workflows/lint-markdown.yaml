@@ -6,10 +6,10 @@ on:
   # Also run on updates to this repo.
   push:
     paths:
-      - '*.md'
+      - '**/*.md'
   pull_request:
     paths:
-      - '*.md'
+      - '**/*.md'
 
 jobs:
   hadolint:
@@ -21,7 +21,7 @@ jobs:
       - name: Set reviewdog reporter type
         run: |
           if [ ${{ github.event_name }} != "pull_request" ]; then
-            echo "REVIEWDOG_REPORTER=github-check" >> $GITHUB_ENV
+            echo "REVIEWDOG_REPORTER=local" >> $GITHUB_ENV
           else
             echo "REVIEWDOG_REPORTER=github-pr-review" >> $GITHUB_ENV
           fi
