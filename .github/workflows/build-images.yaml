@@ -1,6 +1,8 @@
+# yamllint disable rule:line-length
+---
 name: Hercules Docker images
 
-on:
+on: # yamllint disable-line rule:truthy
   # Allow manual runs.
   workflow_dispatch:
   # Also run on updates to this repo.
@@ -44,8 +46,10 @@ jobs:
       - name: Get latest release tag
         run: |
           cd hercules
-          HERCULES_VERSION=$(basename $(curl -fs -o/dev/null -w %{redirect_url} https://github.com/HerculesWS/Hercules/releases/latest))
-          HERCULES_REVISION=$(git show-ref --dereference --tags -s refs/tags/$HERCULES_VERSION)
+          HERCULES_VERSION=$(basename $(curl -fs -o/dev/null -w %{redirect_url}\
+            https://github.com/HerculesWS/Hercules/releases/latest))
+          HERCULES_REVISION=$(git show-ref --dereference --tags -s \
+            refs/tags/$HERCULES_VERSION)
           echo "HERCULES_VERSION=${HERCULES_VERSION}" >> $GITHUB_ENV
           echo "HERCULES_REVISION=${HERCULES_REVISION}" >> $GITHUB_ENV
           git checkout ${HERCULES_VERSION}
