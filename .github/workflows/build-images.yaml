@@ -2,7 +2,7 @@
 ---
 name: Hercules Docker images
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   # Allow manual runs.
   workflow_dispatch:
   # Also run on updates to this repo.
@@ -91,14 +91,14 @@ jobs:
 
       - name: Login to DockerHub
         if: ${{ env.PUSH_IMAGE == 'true' }}
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
         if: ${{ env.PUSH_IMAGE == 'true' }}
-        uses: docker/login-action@v2 
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
