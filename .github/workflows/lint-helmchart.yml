@@ -1,0 +1,23 @@
+name: Lint Helm chart
+
+on:
+  # Allow manual runs.
+  workflow_dispatch:
+  # Also run on updates to this repo.
+  push:
+    paths:
+      - 'charts/*'
+  pull_request:
+    paths:
+      - 'charts/*'
+
+jobs:
+  helm-lint:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine/helm
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+      - name: Lint Helm chart
+        run: helm lint

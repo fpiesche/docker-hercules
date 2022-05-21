@@ -1,0 +1,25 @@
+name: Lint shell scripts
+
+on:
+  # Allow manual runs.
+  workflow_dispatch:
+  # Also run on updates to this repo.
+  pull_request:
+    paths:
+      - '**/*.sh'
+  push:
+    paths:
+      - '**/*.sh'
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+      - name: Lint build shell scripts
+        uses: reviewdog/action-shellcheck@v1
+        with:
+          github_token: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
+          reporter: github-pr-review
+          level: info

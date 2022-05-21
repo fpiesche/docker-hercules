@@ -1,24 +1,22 @@
-name: Linting
+name: Lint Dockerfile
 
 on:
   # Allow manual runs.
   workflow_dispatch:
   # Also run on updates to this repo.
-  pull_request:
-    branches:
-      - main
+  push:
     paths:
-      - '*.sh'
-      - 'distrib-tmpl/**'
+      - 'Dockerfile'
+  pull_request:
+    paths:
       - 'Dockerfile'
 
 jobs:
-  linting:
+  hadolint:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
-
       - name: Lint Dockerfile
         uses: reviewdog/action-hadolint@v1
         with:
@@ -26,10 +24,3 @@ jobs:
           reporter: github-pr-review
           level: info
           hadolint_ignore: DL3003,DL3008
-
-      - name: Lint build shell scripts
-        uses: reviewdog/action-shellcheck@v1
-        with:
-          github_token: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
-          reporter: github-pr-review
-          level: info

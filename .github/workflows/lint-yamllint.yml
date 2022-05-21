@@ -1,0 +1,27 @@
+name: Lint YAML
+
+on:
+  # Allow manual runs.
+  workflow_dispatch:
+  # Also run on updates to this repo.
+  push:
+    paths:
+      - '*.yml'
+      - '*.yaml'
+  pull_request:
+    paths:
+      - '*.yml'
+      - '*.yaml'
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+      - name: Lint build shell scripts
+        uses: reviewdog/action-yamllint@v1
+        with:
+          github_token: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
+          reporter: github-pr-review
+          level: info
