@@ -17,9 +17,18 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+
+      - name: Set reviewdog reporter type
+        run: |
+          if [ ${{ github.event_name }} == "pull_request" ]; then
+            echo "REVIEWDOG_REPORTER=github-check" >> $GITHUB_ENV
+          else
+            echo "REVIEWDOG_REPORTER=github-pr-review" >> $GITHUB_ENV
+          fi
+
       - name: Lint Dockerfile
         uses: reviewdog/action-markdownlint@v0
         with:
           github_token: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
-          reporter: github-pr-review
+          reporter: ${{ env.REVIEWDOG_REPORTER }}
           level: info
