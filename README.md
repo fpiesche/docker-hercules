@@ -1,5 +1,5 @@
 <!-- markdownlint-disable-next-line html line_length -->
-# Hercules in Docker <img style="float: left; margin-right: .2em;" src="https://raw.githubusercontent.com/fpiesche/docker-hercules/main/hercules-icon.png" alt="Hercules logo"/>
+# <img style="float: left; margin-right: .2em;" src="https://raw.githubusercontent.com/fpiesche/docker-hercules/main/hercules-icon.png" alt="Hercules logo"/> Hercules in Docker
 
 A Docker setup for building and containerising the Ragnarok Online
 server emulator Hercules.
