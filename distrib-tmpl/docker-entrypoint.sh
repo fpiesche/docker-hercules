@@ -1,7 +1,7 @@
 #!/bin/bash
 
 HERCULES_DB_CONFIG_FILE=/hercules/conf/global/sql_connection.conf
-HERCULES_LOGIN_SERVER_CONFIG_FILE=/hercules/conf/import/login-server.conf
+# HERCULES_LOGIN_SERVER_CONFIG_FILE=/hercules/conf/import/login-server.conf
 HERCULES_CHAR_SERVER_CONFIG_FILE=/hercules/conf/import/char-server.conf
 HERCULES_MAP_SERVER_CONFIG_FILE=/hercules/conf/import/map-server.conf
 
@@ -20,7 +20,7 @@ sed -i.bak -e "s/{{INTERSERVER_PASSWORD}}/${INTERSERVER_PASSWORD}/" ${HERCULES_C
 sed -i.bak -e "s/{{LOGIN_SERVER_HOST}}/${LOGIN_SERVER_HOST}/" ${HERCULES_CHAR_SERVER_CONFIG_FILE}
 sed -i.bak -e "s/{{CHAR_SERVER_HOST}}/${CHAR_SERVER_HOST}/" ${HERCULES_CHAR_SERVER_CONFIG_FILE}
 
-echo "Filling server info in ${LOGIN_SERVER_CONFIG_FILE}"
+# echo "Filling server info in ${HERCULES_LOGIN_SERVER_CONFIG_FILE}"
 
 echo "Filling server info in ${HERCULES_MAP_SERVER_CONFIG_FILE}"
 sed -i.bak -e "s/{{INTERSERVER_USER}}/${INTERSERVER_USER}/" ${HERCULES_MAP_SERVER_CONFIG_FILE}
