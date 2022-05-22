@@ -28,8 +28,10 @@ sed -i.bak -e "s/{{INTERSERVER_PASSWORD}}/${INTERSERVER_PASSWORD}/" ${HERCULES_M
 sed -i.bak -e "s/{{MAP_SERVER_HOST}}/${MAP_SERVER_HOST}/" ${HERCULES_MAP_SERVER_CONFIG_FILE}
 sed -i.bak -e "s/{{CHAR_SERVER_HOST}}/${CHAR_SERVER_HOST}/" ${HERCULES_MAP_SERVER_CONFIG_FILE}
 
-if [[ -n $HERCULES_SERVER_EXECUTABLE ]]; then
+if [[ -z $HERCULES_SERVER_EXECUTABLE ]]; then
+    echo "No server executable specified, starting all servers using athena-start..."
     /hercules/athena-start start
 else
+    echo "Starting $HERCULES_SERVER_EXECUTABLE..."
     $HERCULES_SERVER_EXECUTABLE
 fi
