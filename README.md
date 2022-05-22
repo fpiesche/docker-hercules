@@ -14,8 +14,6 @@ server emulator Hercules.
 [![yamllint](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-yamllint.yaml/badge.svg)](https://github.com/fpiesche/docker-hercules/actions/workflows/lint-yamllint.yaml)
 <!-- markdownlint-enable line_length -->
 
-
-
 ## What is this?
 
 This repository specifically contains everything you need to build a Hercules
