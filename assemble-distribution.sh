@@ -58,5 +58,5 @@ else
 fi
 
 echo "=== Adding remaining files from distribution template..."
-cp -r "${WORKSPACE}"/distrib-tmpl/conf "${BUILD_TARGET}"/
+cp -r "${WORKSPACE}"/distrib-tmpl/* "${BUILD_TARGET}"/
 cp "${WORKSPACE}"/distrib-tmpl/.env "${BUILD_TARGET}"
