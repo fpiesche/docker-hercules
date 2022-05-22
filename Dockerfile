@@ -23,25 +23,28 @@ ARG HERCULES_RELEASE="latest"
 ARG HERCULES_BUILD_OPTS
 
 # Install build dependencies.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  gcc \
-  git \
-  libmariadb-dev \
-  libmariadb-dev-compat \
-  libpcre3-dev \
-  libssl-dev \
-  make \
-  zlib1g-dev
-
-# Create a build user
-RUN adduser --home /home/builduser --shell /bin/bash --gecos "builduser" --disabled-password builduser
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    gcc \
+    git \
+    libmariadb-dev \
+    libmariadb-dev-compat \
+    libpcre3-dev \
+    libssl-dev \
+    make \
+    zlib1g-dev \
+  && adduser \
+    --home /home/builduser \
+    --shell /bin/bash \
+    --gecos "builduser" \
+    --disabled-password builduser
 
 # Copy the repo into the build container
 COPY --chown=builduser . /home/builduser
 
 # Run the build
 USER builduser
-ENV WORKSPACE=/home/builduser  HERCULES_SRC=/home/builduser/hercules DISABLE_MANAGER_ARM64=true \
+ENV WORKSPACE=/home/builduser HERCULES_SRC=/home/builduser/hercules DISABLE_MANAGER_ARM64=true \
     HERCULES_RELEASE=${HERCULES_RELEASE} HERCULES_PACKET_VERSION=${HERCULES_PACKET_VERSION} \
     HERCULES_SERVER_MODE=${HERCULES_SERVER_MODE} HERCULES_BUILD_OPTS=${HERCULES_BUILD_OPTS} \
     BUILD_IDENTIFIER=hercules
@@ -49,11 +52,11 @@ ENV DISTRIB_PATH=${WORKSPACE}/distrib
 ENV BUILD_TARGET=${DISTRIB_PATH}/${BUILD_IDENTIFIER}
 
 WORKDIR /home/builduser
-RUN ${WORKSPACE}/create-env-file.sh
-RUN ${WORKSPACE}/configure-build.sh
-RUN cd ${HERCULES_SRC} && make
-RUN ${WORKSPACE}/assemble-distribution.sh
-RUN ${WORKSPACE}/create-version-file.sh
+RUN ${WORKSPACE}/create-env-file.sh \
+  && ${WORKSPACE}/configure-build.sh \
+  && cd ${HERCULES_SRC} && make && cd ${WORKSPACE} \
+  && ${WORKSPACE}/assemble-distribution.sh \
+  && ${WORKSPACE}/create-version-file.sh
 
 ###
 # STAGE 2: EXPORT BUILD
@@ -76,12 +79,11 @@ FROM debian:bullseye-slim AS build_image
 
 # Install base system dependencies and create user.
 RUN \
-  apt-get update && \
-  apt-get install -y --no-install-recommends \
-  libmariadb3 \
-  libmariadb-dev-compat \
-  && rm -rf /var/lib/apt/lists/*
-RUN useradd --no-log-init -r hercules
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+      libmariadb3 libmariadb-dev-compat vim \
+  && rm -rf /var/lib/apt/lists/* \
+  && useradd --no-log-init -r hercules
 
 # Copy the actual distribution from builder image
 COPY --from=build_hercules --chown=hercules /home/builduser/distrib/ /
@@ -99,3 +101,4 @@ USER hercules
 WORKDIR /hercules
 VOLUME /hercules/conf/import
 CMD [ "/hercules/docker-entrypoint.sh" ]
+  
