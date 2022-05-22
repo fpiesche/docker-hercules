@@ -38,7 +38,6 @@ a separate distribution directory *inside the container*.
 `build_hercules` step to an empty container. This can be used to easily copy the
 build out of the build containers to your host machine by using [the `--output` parameter for `docker build`](https://docs.docker.com/engine/reference/commandline/build/#custom-build-outputs):
 
-
       docker build --target export_build \
         --output type=tar,dest=hercules.tar
 
@@ -52,7 +51,8 @@ simply run the Hercules server with a single `docker run` command.
 
 If you just want to run a server without making your own build, there are
 standard images built and published from this repository via
-[automated builds](https://github.com/fpiesche/hercules-docker/actions) whenever a new version of Hercules is released.
+[automated builds](https://github.com/fpiesche/hercules-docker/actions)
+whenever a new version of Hercules is released.
 
 These images are always built with the current release version of Hercules, for
 Intel/AMD (most home computers), ARMv6 (Raspberry Pi 1), ARMv7 (Raspberry Pi 2
@@ -107,10 +107,8 @@ You can run only the first stage of the Dockerfile to build Hercules without
 packaging it up in an image. To just build Hercules and copy the build to your
 local machine, run:
 
-```bash
-docker build . -t hercules --target export_build \
-  --output type=local,dest=out.tar
-```
+    docker build . -t hercules --target export_build \
+      --output type=local,dest=out.tar
 
 Note that this **will** be a Linux build, so if you want to run this on a
 Windows host you might need to put some more work in. I'd be happy to accept
@@ -122,11 +120,9 @@ To build a Renewal rather than a Classic server or a specific packet version,
 modify your `docker build` command with the `HERCULES_SERVER_MODE` and/or
 `HERCULES_PACKET_VERSION` build arguments:
 
-```bash
-docker build . -t hercules [--target build_hercules] \
-  --build-arg HERCULES_SERVER_MODE=[classic|renewal] \
-  --build-arg HERCULES_PACKET_VERSION=[whatever]
-```
+    docker build . -t hercules [--target build_hercules] \
+      --build-arg HERCULES_SERVER_MODE=[classic|renewal] \
+      --build-arg HERCULES_PACKET_VERSION=[whatever]
 
 ## I'm a developer. Can I use this with my own copy of the Hercules source code?
 
@@ -137,11 +133,9 @@ then on will be built from this copy instead.
 If you already have a git repository with the Hercules source for your
 modifications or plugins, you could also simply replace the submodule:
 
-```bash
-git submodule deinit hercules
-rm -rf hercules
-git submodule add https://github.com/me/my-hercules-repo ./hercules
-```
+    git submodule deinit hercules
+    rm -rf hercules
+    git submodule add https://github.com/me/my-hercules-repo ./hercules
 
 Read up on [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 for more information on how that all works.
