@@ -29,7 +29,7 @@ sed -i.bak -e "s/{{MAP_SERVER_HOST}}/${MAP_SERVER_HOST}/" ${HERCULES_MAP_SERVER_
 sed -i.bak -e "s/{{CHAR_SERVER_HOST}}/${CHAR_SERVER_HOST}/" ${HERCULES_MAP_SERVER_CONFIG_FILE}
 
 if [[ -n $HERCULES_SERVER_EXECUTABLE ]]; then
-    /hercules/athena-start
+    /hercules/athena-start start
 else
     $HERCULES_SERVER_EXECUTABLE
 fi
