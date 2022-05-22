@@ -1,6 +1,6 @@
 # yamllint disable rule:line-length
 ---
-name: Hercules Docker images
+name: Images
 
 on:  # yamllint disable-line rule:truthy
   # Allow manual runs.
