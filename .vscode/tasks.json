@@ -4,73 +4,67 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Hercules",
+            "label": "Lint Dockerfiles",
             "type": "shell",
-            "command": "docker-compose up",
-            "options": {
-                "env": {
-                    "ARCH": "${input:arch}"
-                }
+            "command": "docker run --rm -it -v ${PWD}:/ hadolint/hadolint",
+            "group": {
+                "kind": "test",
             },
-            "group": "build"
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint YAML",
+            "type": "shell",
+            "command": "docker run --rm -it -v ${PWD}:/data cytopia/yamllint",
+            "group": {
+                "kind": "test",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint shell scripts",
+            "type": "shell",
+            "command": "docker run --rm -it -v ${PWD}:/mnt koalaman/shellcheck-alpine",
+            "group": {
+                "kind": "test",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint Markdown",
+            "type": "shell",
+            "command": "docker run --rm -it -v ${PWD}:/workdir ghcr.io/igorshubovych/markdownlint-cli",
+            "group": {
+                "kind": "test",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint Helm chart",
+            "type": "shell",
+            "command": "docker run --rm -it -v ${PWD}:/workdir alpine/helm helm lint /workdir/charts/hercules",
+            "group": {
+                "kind": "test",
+            },
+            "problemMatcher": []
         },
         {
             "label": "Build Docker",
             "type": "shell",
-            "command": "docker build . --tag hercules --build-arg ARCH=${input:arch}",
-            "problemMatcher": [],
-            "group": "build"
-        },
-        {
-            "label": "Run Docker",
-            "type": "shell",
-            "command": "docker-compose up",
-            "options": {
-                "cwd": "distrib"
-            },
-            "group": "test"
-        },
-        {
-            "label": "Build All",
-            "dependsOn": [
-                "Build Hercules",
-                "Build Docker"
-            ],
-            "dependsOrder": "sequence",
-            "problemMatcher": [],
-            "group": "build"
-        },
-        {
-            "label": "Build All and Run",
-            "dependsOn": [
-                "Build Hercules",
-                "Build Docker",
-                "Run Docker"
-            ],
-            "problemMatcher": [],
+            "command": "docker buildx build . -t hercules",
             "group": {
                 "kind": "build",
-                "isDefault": true
-            }
+            },
+            "problemMatcher": []
         },
         {
-            "label": "Rebuild and run Docker only",
-            "dependsOn": [
-                "Build Docker",
-                "Run Docker"
-            ],
-            "dependsOrder": "sequence",
-            "problemMatcher": [],
-            "group": "build"
-        }
-    ],
-    "inputs": [
-        {
-          "id": "arch",
-          "type": "pickString",
-          "options": ["arm32v7", "arm64v8", "amd64"],
-          "default": "arm32v7",
-          "description": "Select the architecture to compile."
-        }
-      ]
+            "label": "Build Hercules",
+            "type": "shell",
+            "command": "docker buildx build --target export_build -t hercules --output type=tar,dest=hercules.tar",
+            "group": {
+                "kind": "build",
+            },
+            "problemMatcher": []
+        },
+  ]
 }
