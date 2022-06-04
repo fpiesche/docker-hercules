@@ -81,7 +81,7 @@ FROM debian:bullseye-slim AS build_image
 RUN \
   apt-get update \
   && apt-get install -y --no-install-recommends \
-      libmariadb3 libmariadb-dev-compat vim \
+      libmariadb3 libmariadb-dev-compat vim screen \
   && rm -rf /var/lib/apt/lists/* \
   && useradd --no-log-init -r hercules
 
@@ -101,4 +101,3 @@ USER hercules
 WORKDIR /hercules
 VOLUME /hercules/conf/import
 CMD [ "/hercules/docker-entrypoint.sh" ]
-  
