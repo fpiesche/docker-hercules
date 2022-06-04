@@ -31,8 +31,8 @@ sed -i.bak -e "s/{{CHAR_SERVER_HOST}}/${CHAR_SERVER_HOST}/" ${HERCULES_MAP_SERVE
 if [[ -z $HERCULES_SERVER_EXECUTABLE ]]; then
     echo "No server executable specified, starting all servers..."
     servers=( login-server char-server map-server )
-    for server in ${servers[@]}; do
-        screen -dmS $server -L -Logfile /hercules/log/$server.log /hercules/$server
+    for server in "${servers[@]}"; do
+        screen -dmS "$server" -L -Logfile "/hercules/log/$server.log" "/hercules/$server"
     done
     tail -f /hercules/log/*.log
 else
